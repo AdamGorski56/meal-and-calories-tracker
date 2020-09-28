@@ -74,6 +74,18 @@ const ItemCtrl = (function(){
             return found;
         },
 
+        deleteItem: function (id){
+            //Get ids
+            const ids = data.items.map(function(item){
+                return item.id;
+            })
+            //Get index
+            const index = ids.indexOf(id);
+
+            //Remove item
+            data.items.splice(index,1);
+        },
+
         setCurrentItem: function(item){
             data.currentItem = item;
         },
@@ -111,7 +123,7 @@ const UICtrl = (function(){
         listItems: '#item-list li',
         addBtn : '.add-btn',
         updateBtn : '.update-btn',
-        delateBtn : '.delate-btn',
+        deleteBtn : '.delete-btn',
         backBtn : '.back-btn',
         itemNameInput : '#item-name',
         itemCaloriesInput : '#item-calories',
@@ -176,6 +188,12 @@ const UICtrl = (function(){
                 }
             });
         },
+
+        delateListItem: function (id){
+            const itemID = `#item-${id}`;
+            const item = document.querySelector(itemID);
+            item.remove();
+        },
         clearInput: function(){
             document.querySelector(UISelectors.itemNameInput).value = '';
             document.querySelector(UISelectors.itemCaloriesInput).value = '';
@@ -192,17 +210,18 @@ const UICtrl = (function(){
         showTotalCalories: function(totalCalories){
             document.querySelector(UISelectors.totalCalories).textContent = totalCalories;
         },
-        clearEditState: function(){
+        clearEditState: function(e){
             UICtrl.clearInput();
             document.querySelector(UISelectors.updateBtn).style.display = 'none';
-            document.querySelector(UISelectors.delateBtn).style.display = 'none';
+            document.querySelector(UISelectors.deleteBtn).style.display = 'none';
             document.querySelector(UISelectors.backBtn).style.display = 'none';
             document.querySelector(UISelectors.addBtn).style.display = 'inline';
+            
         },
         showEditState: function(){
            
             document.querySelector(UISelectors.updateBtn).style.display = 'inline';
-            document.querySelector(UISelectors.delateBtn).style.display = 'inline';
+            document.querySelector(UISelectors.deleteBtn).style.display = 'inline';
             document.querySelector(UISelectors.backBtn).style.display = 'inline';
             document.querySelector(UISelectors.addBtn).style.display = 'none';
         },
@@ -238,6 +257,10 @@ const App = (function(ItemCtrl, UICtrl){
         document.querySelector(UISelectors.itemList).addEventListener('click', itemEditClick);
         //update item event
         document.querySelector(UISelectors.updateBtn).addEventListener('click', itemUpdateSubmit);
+        //Back button event
+        document.querySelector(UISelectors.backBtn).addEventListener('click', UICtrl.clearEditState);
+        //delete button event
+        document.querySelector(UISelectors.deleteBtn).addEventListener('click', itemDeleteSubmit);
     }
 
     //Add item submit
@@ -303,6 +326,25 @@ const App = (function(ItemCtrl, UICtrl){
         
         e.preventDefault();
     }
+
+    //delete button event
+    const itemDeleteSubmit = function (e){
+        //Get current item
+        const currentItem = ItemCtrl.getCurrentItem();
+        //delete from data structure
+        ItemCtrl.deleteItem(currentItem.id);
+        //delete from UI
+        UICtrl.delateListItem(currentItem.id);
+
+        const totalCalories = ItemCtrl.getTotalCalories();
+            //Add total calories to UI
+            UICtrl.showTotalCalories(totalCalories);
+
+            UICtrl.clearEditState();
+        e.preventDefault();
+    };
+
+    //public methods
     return{
         init: function(){
             UICtrl.clearEditState();
